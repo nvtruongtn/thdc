@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trắc Nghiệm – Phần III: Microsoft Excel</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg:      #0A1A0F;
+    --surface: #0F2318;
+    --card:    #132B1C;
+    --border:  #1A3D25;
+    --accent:  #22C55E;
+    --accent2: #16A34A;
+    --accent3: #4ADE80;
+    --gold:    #F59E0B;
+    --blue:    #3B82F6;
+    --correct: #22C55E;
+    --wrong:   #EF4444;
+    --text:    #E2F5E8;
+    --muted:   #6B9E7A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(160deg, #071210 0%, #0d2018 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 55% at 15% 50%, rgba(34,197,94,.10) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 40% at 85% 30%, rgba(245,158,11,.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  header::after {
+    content: '∑';
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 110px; font-weight: 700;
+    color: rgba(34,197,94,.055);
+    pointer-events: none; line-height: 1;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(34,197,94,.12);
+    border: 1px solid rgba(34,197,94,.35);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-size: clamp(1.4rem, 4vw, 2.1rem);
+    font-weight: 700; letter-spacing: -.02em;
+    background: linear-gradient(135deg, #fff 25%, var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+  /* ── FORMULA TICKER ── */
+  .formula-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--muted);
+    overflow: hidden;
+  }
+  .fx-label {
+    background: rgba(34,197,94,.15);
+    border: 1px solid rgba(34,197,94,.3);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--accent); font-weight: 600; flex-shrink: 0;
+    font-size: 11px;
+  }
+  .fx-text { color: var(--accent3); white-space: nowrap; overflow: hidden; }
+
+  /* ── TOPIC PILLS ── */
+  .topics {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    padding: 16px 24px 4px;
+  }
+  .topic-pill {
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .tp-1 { background: rgba(59,130,246,.14); color: #93C5FD; border: 1px solid rgba(59,130,246,.3); }
+  .tp-2 { background: rgba(34,197,94,.12);  color: #86EFAC; border: 1px solid rgba(34,197,94,.3); }
+  .tp-3 { background: rgba(245,158,11,.12); color: #FCD34D; border: 1px solid rgba(245,158,11,.3); }
+
+  /* ── SCOREBOARD ── */
+  .scoreboard {
+    display: flex; gap: 12px; justify-content: center;
+    padding: 20px 24px 8px; flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 20px; min-width: 110px; text-align: center;
+  }
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px; font-weight: 600; color: var(--accent);
+  }
+  .stat-val.c { color: var(--correct); }
+  .stat-val.w { color: var(--wrong); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── PROGRESS ── */
+  .prog-wrap { padding: 0 24px 12px; }
+  .prog-track { height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent3));
+    border-radius: 999px;
+    transition: width .4s cubic-bezier(.4,0,.2,1); width: 0%;
+  }
+  .prog-label { font-size: 12px; color: var(--muted); text-align: right; margin-top: 5px; }
+
+  /* ── MAIN ── */
+  main { max-width: 780px; margin: 0 auto; padding: 8px 16px 48px; }
+
+  /* ── FORMULA REFERENCE (collapsible) ── */
+  .ref-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 20px; overflow: hidden;
+  }
+  .ref-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 18px; cursor: pointer;
+    font-weight: 600; font-size: 13px; color: var(--accent);
+    user-select: none;
+  }
+  .ref-toggle:hover { background: rgba(34,197,94,.05); }
+  .ref-arrow { transition: transform .25s; font-size: 11px; }
+  .ref-arrow.open { transform: rotate(180deg); }
+  .ref-body {
+    display: none; padding: 0 16px 14px;
+    grid-template-columns: 1fr 1fr; gap: 4px 20px;
+  }
+  .ref-body.open { display: grid; }
+  .ref-row {
+    display: flex; align-items: baseline; gap: 8px;
+    font-size: 12px; color: var(--muted);
+    padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+  }
+  .fn {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--accent3); flex-shrink: 0; white-space: nowrap;
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; margin-bottom: 20px; overflow: hidden;
+    transition: border-color .25s;
+  }
+  .q-card.answered { border-color: rgba(34,197,94,.28); }
+
+  .q-head {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 20px 14px;
+  }
+  .q-num {
+    flex-shrink: 0; width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; margin-top: 1px;
+  }
+  .q-tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    letter-spacing: .07em; text-transform: uppercase;
+    border-radius: 4px; padding: 2px 8px; margin-bottom: 7px;
+  }
+  .tg-1 { color: #93C5FD; background: rgba(59,130,246,.13); }
+  .tg-2 { color: #86EFAC; background: rgba(34,197,94,.12); }
+  .tg-3 { color: #FCD34D; background: rgba(245,158,11,.12); }
+  .q-text { font-size: 15px; font-weight: 500; line-height: 1.6; }
+
+  /* inline formula chip */
+  .fml {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600;
+    background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.28);
+    border-radius: 5px; padding: 1px 7px; color: var(--accent3);
+    white-space: nowrap;
+  }
+
+  /* ── OPTIONS ── */
+  .options { padding: 0 20px 16px; display: grid; gap: 8px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 10px; cursor: pointer;
+    transition: border-color .18s, background .18s, transform .12s;
+    user-select: none; -webkit-tap-highlight-color: transparent;
+  }
+  .opt:hover:not(.locked) { border-color: var(--accent); background: rgba(34,197,94,.07); transform: translateX(3px); }
+  .opt:active:not(.locked) { transform: translateX(1px); }
+  .opt-letter {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 7px;
+    background: var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); transition: background .18s, color .18s;
+  }
+  .opt-text { font-size: 14px; line-height: 1.5; flex: 1; }
+  .opt.correct { background: rgba(34,197,94,.10); border-color: var(--correct); }
+  .opt.correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt.wrong   { background: rgba(239,68,68,.08);  border-color: var(--wrong); }
+  .opt.wrong   .opt-letter { background: var(--wrong);   color: #fff; }
+  .opt.locked  { cursor: default; }
+
+  /* ── MINI SPREADSHEET (visual hint) ── */
+  .mini-sheet {
+    margin: 0 20px 12px;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  }
+  .ms-head {
+    display: grid; background: rgba(34,197,94,.12);
+    border-bottom: 1px solid var(--border);
+  }
+  .ms-row { display: grid; }
+  .ms-row:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,.05); }
+  .ms-cell {
+    padding: 5px 10px; color: var(--muted);
+    border-right: 1px solid rgba(255,255,255,.05);
+  }
+  .ms-cell:last-child { border-right: none; }
+  .ms-cell.hd { color: var(--accent3); font-weight: 600; font-size: 11px; }
+  .ms-cell.val { color: var(--text); }
+  .ms-cell.fml-cell { color: var(--accent3); }
+  .ms-cell.hl { background: rgba(34,197,94,.07); color: var(--accent3); font-weight: 600; }
+
+  /* ── EXPLANATION ── */
+  .explain {
+    margin: 0 20px 16px; padding: 12px 16px;
+    background: rgba(34,197,94,.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px; color: var(--muted);
+    display: none; animation: slideDown .25s ease;
+  }
+  .explain.show { display: block; }
+  .explain strong { color: var(--text); }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESULT ── */
+  #result-screen {
+    display: none; text-align: center;
+    padding: 48px 24px; background: var(--card);
+    border: 1px solid var(--border); border-radius: 20px; margin-top: 8px;
+  }
+  #result-screen.show { display: block; }
+  .result-emoji { font-size: 56px; margin-bottom: 16px; }
+  .result-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .result-sub { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+  .result-score {
+    font-family: 'JetBrains Mono', monospace; font-size: 64px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent3));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1; margin-bottom: 4px;
+  }
+  .result-total { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .result-bars { display: flex; gap: 6px; justify-content: center; margin-bottom: 32px; flex-wrap: wrap; }
+  .res-dot {
+    width: 36px; height: 36px; border-radius: 9px;
+    font-size: 13px; font-weight: 600;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  }
+  .res-dot span { font-size: 9px; opacity: .65; }
+  .res-dot.c { background: rgba(34,197,94,.18); color: var(--correct); }
+  .res-dot.w { background: rgba(239,68,68,.14); color: var(--wrong); }
+  .btn-retry {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 32px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    color: #fff; border: none; border-radius: 12px;
+    font-family: 'Be Vietnam Pro', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: opacity .18s, transform .12s;
+  }
+  .btn-retry:hover { opacity: .88; transform: translateY(-1px); }
+
+  /* ── SUBMIT ── */
+  .submit-wrap { text-align: center; margin-top: 8px; }
+  #btn-submit {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    color: #fff; border: none; border-radius: 12px;
+    font-family: 'Be Vietnam Pro', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: opacity .18s, transform .12s;
+  }
+  #btn-submit:disabled { opacity: .30; cursor: not-allowed; transform: none; }
+  #btn-submit:not(:disabled):hover { opacity: .88; transform: translateY(-1px); }
+
+  @media (max-width: 480px) {
+    header::after { display: none; }
+    .scoreboard { gap: 8px; }
+    .stat { min-width: 90px; padding: 10px 14px; }
+    .stat-val { font-size: 20px; }
+    .q-head { gap: 10px; padding: 16px 14px 12px; }
+    .options { padding: 0 14px 14px; }
+    .opt { padding: 11px 12px; gap: 10px; }
+    .explain { margin: 0 14px 14px; }
+    .ref-body { grid-template-columns: 1fr; }
+    .mini-sheet { margin: 0 14px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">📊 Tin Học Đại Cương · K58</div>
+  <h1>Phần III: Microsoft Excel</h1>
+  <p>9 câu trắc nghiệm · Ngày tháng · Logic &amp; Chuỗi · Toán học</p>
+</header>
+
+<!-- formula bar decoration -->
+<div class="formula-bar">
+  <span class="fx-label">fx</span>
+  <span class="fx-text">=IF(AND(ROUND(MOD(17,4),-1)=0, LEFT("HANOI",2)="HA"), "Đúng rồi!", YEAR("20/10/2003"))</span>
+</div>
+
+<div class="topics">
+  <div class="topic-pill tp-1">📅 Ngày tháng</div>
+  <div class="topic-pill tp-2">🔀 Logic &amp; Chuỗi</div>
+  <div class="topic-pill tp-3">🔢 Toán học</div>
+</div>
+
+<div class="scoreboard">
+  <div class="stat"><div class="stat-val" id="s-total">0/9</div><div class="stat-lbl">Đã trả lời</div></div>
+  <div class="stat"><div class="stat-val c" id="s-correct">0</div><div class="stat-lbl">Đúng</div></div>
+  <div class="stat"><div class="stat-val w" id="s-wrong">0</div><div class="stat-lbl">Sai</div></div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+  <div class="prog-label" id="prog-lbl">0 / 9 câu</div>
+</div>
+
+<main id="quiz-body">
+
+  <!-- Reference card -->
+  <div class="ref-box">
+    <div class="ref-toggle" onclick="toggleRef()">
+      <span>📋 Bảng tra hàm Excel nhanh (click để mở)</span>
+      <span class="ref-arrow" id="ref-arrow">▼</span>
+    </div>
+    <div class="ref-body" id="ref-body">
+      <div class="ref-row"><span class="fn">=TODAY()</span> Ngày hiện tại của hệ thống</div>
+      <div class="ref-row"><span class="fn">=DAY(ngày)</span> Lấy số ngày từ chuỗi ngày</div>
+      <div class="ref-row"><span class="fn">=MONTH(ngày)</span> Lấy số tháng từ chuỗi ngày</div>
+      <div class="ref-row"><span class="fn">=YEAR(ngày)</span> Lấy năm từ chuỗi ngày</div>
+      <div class="ref-row"><span class="fn">=IF(dk,đ,s)</span> Nếu điều kiện đúng→đ, sai→s</div>
+      <div class="ref-row"><span class="fn">=AND(dk1,dk2)</span> Đúng khi TẤT CẢ điều kiện đúng</div>
+      <div class="ref-row"><span class="fn">=OR(dk1,dk2)</span> Đúng khi ÍT NHẤT 1 điều kiện đúng</div>
+      <div class="ref-row"><span class="fn">=LEFT(s,n)</span> Lấy n ký tự bên trái chuỗi s</div>
+      <div class="ref-row"><span class="fn">=RIGHT(s,n)</span> Lấy n ký tự bên phải chuỗi s</div>
+      <div class="ref-row"><span class="fn">=MID(s,vt,n)</span> Lấy n ký tự từ vị trí vt</div>
+      <div class="ref-row"><span class="fn">=INT(x)</span> Phần nguyên (làm tròn xuống)</div>
+      <div class="ref-row"><span class="fn">=MOD(x,y)</span> Phần dư của x chia y</div>
+      <div class="ref-row"><span class="fn">=ROUND(x,n)</span> Làm tròn x đến n chữ số (n&lt;0 = hàng chục/trăm...)</div>
+      <div class="ref-row"><span class="fn">=COUNTIF(vùng,dk)</span> Đếm ô thỏa điều kiện trong vùng</div>
+    </div>
+  </div>
+
+  <!-- questions injected by JS -->
+
+  <div id="result-screen">
+    <div class="result-emoji" id="r-emoji">🎉</div>
+    <div class="result-title" id="r-title">Xuất sắc!</div>
+    <div class="result-sub" id="r-sub">Bạn nắm vững Excel!</div>
+    <div class="result-score" id="r-score">9</div>
+    <div class="result-total">/ 9 câu đúng</div>
+    <div class="result-bars" id="r-bars"></div>
+    <button class="btn-retry" onclick="retry()">↺ Làm lại</button>
+  </div>
+
+  <div class="submit-wrap" id="submit-wrap">
+    <button id="btn-submit" disabled onclick="showResult()">Xem kết quả →</button>
+  </div>
+</main>
+
+<script>
+// tag: 1=ngày tháng, 2=logic&chuỗi, 3=toán học
+const questions = [
+
+  // ── NHÓM 1: Ngày tháng ──
+  {
+    tag: 1,
+    text: 'Nếu ngày hệ thống đang là <strong>20/5/2024</strong>, kết quả của hàm <span class="fml">=YEAR("15/08/1975")</span> là:',
+    opts: ['2024', '1975', '8', '15'],
+    ans: 1,
+    exp: '<strong>YEAR()</strong> trả về năm trong chuỗi ngày được truyền vào — hoàn toàn độc lập với ngày hệ thống. "15/08/1975" có năm = <strong>1975</strong>.'
+  },
+  {
+    tag: 1,
+    text: 'Hàm <span class="fml">=MONTH("05/09/2022")</span> trả về kết quả là bao nhiêu? (Định dạng ngày: dd/mm/yyyy)',
+    opts: ['5', '9', '2022', '22'],
+    ans: 1,
+    exp: 'Định dạng <strong>dd/mm/yyyy</strong>: ngày = 05, <strong>tháng = 09</strong>, năm = 2022. MONTH() lấy phần tháng → kết quả là <strong>9</strong>. Coi chừng nhầm ngày với tháng!'
+  },
+  {
+    tag: 1,
+    text: 'Ô B2 chứa công thức <span class="fml">=TODAY()-30</span>. Nếu hôm nay là <strong>01/07/2024</strong>, kết quả là:',
+    opts: ['01/06/2024', '31/07/2024', '01/07/1994', 'Báo lỗi #VALUE!'],
+    ans: 0,
+    exp: 'Excel lưu ngày dưới dạng số nguyên, nên <strong>TODAY()-30</strong> = lùi lại 30 ngày. 01/07/2024 − 30 ngày = <strong>01/06/2024</strong>.'
+  },
+
+  // ── NHÓM 2: Logic & Chuỗi ──
+  {
+    tag: 2,
+    text: 'Hàm <span class="fml">=IF(AND(5>3, 10&lt;8), "Đúng", "Sai")</span> trả về kết quả là:',
+    opts: ['"Đúng"', '"Sai"', 'TRUE', 'FALSE'],
+    ans: 1,
+    exp: '<strong>AND</strong> yêu cầu <em>tất cả</em> điều kiện đúng. 5&gt;3 là đúng, nhưng 10&lt;8 là <strong>sai</strong> → AND = FALSE → kết quả là <strong>"Sai"</strong>.'
+  },
+  {
+    tag: 2,
+    text: 'Ô A1 chứa chuỗi <strong>"THAINGUYEN"</strong>. Kết quả của <span class="fml">=LEFT(A1,4)</span> là:',
+    opts: ['"THAI"', '"UYEN"', '"NGUY"', '"THAIN"'],
+    ans: 0,
+    exp: '<strong>LEFT(chuỗi, n)</strong> lấy n ký tự từ <em>bên trái</em>. "THAINGUYEN" lấy 4 ký tự đầu → <strong>"THAI"</strong>. Đếm từ trái: T-H-A-I.'
+  },
+  {
+    tag: 2,
+    text: 'Cột A chứa mã sinh viên dạng <strong>"SV2024001"</strong>. Để lấy <strong>4 ký tự giữa</strong> bắt đầu từ vị trí 3 (lấy "2024"), công thức nào đúng?',
+    opts: [
+      '=LEFT(A1,4)',
+      '=RIGHT(A1,4)',
+      '=MID(A1,3,4)',
+      '=MID(A1,4,3)'
+    ],
+    ans: 2,
+    exp: '<strong>=MID(chuỗi, vị_trí_bắt_đầu, số_ký_tự)</strong>. "SV2024001": S=1, V=2, 2=3 → bắt đầu vị trí 3, lấy 4 ký tự → "2024". Vậy <strong>=MID(A1,3,4)</strong>.'
+  },
+
+  // ── NHÓM 3: Toán học ──
+  {
+    tag: 3,
+    text: 'Kết quả của công thức <span class="fml">=MOD(23, 5)</span> là:',
+    opts: ['4', '3', '2', '1'],
+    ans: 1,
+    exp: '23 ÷ 5 = 4 dư <strong>3</strong>. Kiểm tra: 5 × 4 = 20, 23 − 20 = 3. Vậy <strong>MOD(23, 5) = 3</strong>.'
+  },
+  {
+    tag: 3,
+    text: 'Kết quả của công thức <span class="fml">=INT(−3.2)</span> là:',
+    opts: ['-3', '-4', '3', '-3.2'],
+    ans: 1,
+    exp: '<strong>INT()</strong> làm tròn xuống (về phía âm vô cùng), <em>không</em> chỉ bỏ phần thập phân. INT(−3.2) = <strong>−4</strong> vì −4 &lt; −3.2 và là số nguyên gần nhất phía dưới.'
+  },
+  {
+    tag: 3,
+    text: 'Kết quả của công thức <span class="fml">=ROUND(3456.789, -2)</span> là:',
+    opts: ['3456.79', '3457', '3500', '3400'],
+    ans: 2,
+    exp: '<strong>ROUND(x, -2)</strong> làm tròn đến <em>hàng trăm</em>. 3456.789 → nhìn vào hàng chục (5 ≥ 5) → làm tròn lên → <strong>3500</strong>. n âm: −1=chục, −2=trăm, −3=nghìn.'
+  }
+];
+
+const TOTAL = questions.length;
+const tagClass = ['', 'tg-1', 'tg-2', 'tg-3'];
+const tagLabel = ['', '📅 Ngày tháng', '🔀 Logic & Chuỗi', '🔢 Toán học'];
+
+// mini spreadsheet HTML per question index (optional visual)
+const miniSheets = {
+  0: { cols: ['A', 'B'], widths: ['55%','45%'],
+       head: ['Ô', 'Nội dung'],
+       rows: [
+         ['A1', '=YEAR("15/08/1975")'],
+         ['Ngày HT', '20/05/2024'],
+         ['Kết quả', '???']
+       ],
+       hilite: [0, 2] },
+  3: { cols: ['A', 'B'], widths: ['55%','45%'],
+       head: ['Hàm', 'Kết quả'],
+       rows: [
+         ['AND(5>3, 10<8)', '?'],
+         ['5>3', 'TRUE'],
+         ['10<8', 'FALSE']
+       ],
+       hilite: [0] },
+  6: { cols: ['A', 'B'], widths: ['50%','50%'],
+       head: ['Phép tính', 'Bước'],
+       rows: [
+         ['23 ÷ 5 = ?', '4 (thương)'],
+         ['5 × 4 = 20', 'phần chẵn'],
+         ['23 − 20 = ?', 'phần dư']
+       ],
+       hilite: [2] },
+  8: { cols: ['n', 'Ý nghĩa', 'Ví dụ'],
+       widths: ['20%','40%','40%'],
+       head: ['n', 'Làm tròn đến', 'ROUND(3456,n)'],
+       rows: [
+         ['2',  'hàng phần trăm', '3456.00'],
+         ['0',  'hàng đơn vị',   '3456'],
+         ['-1', 'hàng chục',     '3460'],
+         ['-2', 'hàng trăm',     '3500']
+       ],
+       hilite: [3] }
+};
+
+function renderMiniSheet(qi) {
+  const ms = miniSheets[qi];
+  if (!ms) return '';
+  const colCount = ms.cols.length;
+  const gridStyle = `grid-template-columns: ${ms.widths.join(' ')}`;
+  let html = `<div class="mini-sheet">
+    <div class="ms-head" style="${gridStyle}">
+      ${ms.head.map(h => `<div class="ms-cell hd">${h}</div>`).join('')}
+    </div>`;
+  ms.rows.forEach((row, ri) => {
+    const hl = ms.hilite.includes(ri);
+    html += `<div class="ms-row" style="${gridStyle}">
+      ${row.map(cell => `<div class="ms-cell${hl ? ' hl' : ''} ${ri===0?'fml-cell':''}">${cell}</div>`).join('')}
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+let answered = 0, correct = 0, wrong = 0;
+const results = new Array(TOTAL).fill(null);
+
+function buildQuiz() {
+  const body = document.getElementById('quiz-body');
+  const refScreen = document.getElementById('result-screen');
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `card-${i}`;
+    card.innerHTML = `
+      <div class="q-head">
+        <div class="q-num">${String(i+1).padStart(2,'0')}</div>
+        <div style="flex:1">
+          <div class="q-tag ${tagClass[q.tag]}">${tagLabel[q.tag]}</div>
+          <div class="q-text">${q.text}</div>
+        </div>
+      </div>
+      ${renderMiniSheet(i)}
+      <div class="options" id="opts-${i}">
+        ${q.opts.map((o,j) => `
+          <div class="opt" id="opt-${i}-${j}" onclick="pick(${i},${j})">
+            <div class="opt-letter">${'ABCD'[j]}</div>
+            <div class="opt-text">${o}</div>
+          </div>`).join('')}
+      </div>
+      <div class="explain" id="exp-${i}">💡 ${q.exp}</div>
+    `;
+    body.insertBefore(card, refScreen);
+  });
+}
+
+function pick(qi, oi) {
+  if (results[qi] !== null) return;
+  const isCorrect = oi === questions[qi].ans;
+  results[qi] = isCorrect;
+  [...document.getElementById(`opts-${qi}`).children].forEach(o => o.classList.add('locked'));
+  document.getElementById(`opt-${qi}-${oi}`).classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) document.getElementById(`opt-${qi}-${questions[qi].ans}`).classList.add('correct');
+  document.getElementById(`exp-${qi}`).classList.add('show');
+  document.getElementById(`card-${qi}`).classList.add('answered');
+  answered++;
+  if (isCorrect) correct++; else wrong++;
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('s-total').textContent   = `${answered}/${TOTAL}`;
+  document.getElementById('s-correct').textContent = correct;
+  document.getElementById('s-wrong').textContent   = wrong;
+  document.getElementById('prog').style.width      = (answered / TOTAL * 100) + '%';
+  document.getElementById('prog-lbl').textContent  = `${answered} / ${TOTAL} câu`;
+  document.getElementById('btn-submit').disabled   = answered < TOTAL;
+}
+
+function showResult() {
+  document.querySelectorAll('.q-card').forEach(c => c.style.display = 'none');
+  document.querySelector('.ref-box').style.display = 'none';
+  document.getElementById('submit-wrap').style.display = 'none';
+
+  const pct = correct / TOTAL;
+  let emoji, title, sub;
+  if (pct === 1)       { emoji = '🏆'; title = 'Hoàn hảo!';    sub = 'Tất cả 9 câu đúng — bạn thành thạo Excel rồi!'; }
+  else if (pct >= .78) { emoji = '🎉'; title = 'Rất tốt!';      sub = 'Nắm vững phần lớn — xem lại câu sai nhé.'; }
+  else if (pct >= .55) { emoji = '💪'; title = 'Khá ổn!';       sub = 'Ôn thêm hàm ROUND âm và INT số âm dễ nhầm nhất.'; }
+  else                  { emoji = '📖'; title = 'Ôn thêm nhé!'; sub = 'Mở bảng tra hàm và làm lại để nhớ chắc hơn.'; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-sub').textContent   = sub;
+  document.getElementById('r-score').textContent = correct;
+  document.getElementById('r-bars').innerHTML = results.map((r,i) => `
+    <div class="res-dot ${r?'c':'w'}" title="Câu ${i+1}: ${r?'Đúng':'Sai'}">
+      ${r?'✓':'✗'}<span>C${i+1}</span>
+    </div>`).join('');
+
+  document.getElementById('result-screen').classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function retry() {
+  answered = 0; correct = 0; wrong = 0; results.fill(null);
+  document.getElementById('result-screen').classList.remove('show');
+  document.querySelector('.ref-box').style.display = '';
+  document.querySelectorAll('.q-card').forEach(c => c.style.display = '');
+  document.getElementById('submit-wrap').style.display = '';
+  questions.forEach((_,i) => {
+    for (let j = 0; j < 4; j++)
+      document.getElementById(`opt-${i}-${j}`).className = 'opt';
+    document.getElementById(`exp-${i}`).classList.remove('show');
+    document.getElementById(`card-${i}`).classList.remove('answered');
+  });
+  updateStats();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleRef() {
+  const body  = document.getElementById('ref-body');
+  const arrow = document.getElementById('ref-arrow');
+  const open  = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+
+buildQuiz();
+updateStats();
+</script>
+</body>
+</html>
