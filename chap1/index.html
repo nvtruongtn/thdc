@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trắc Nghiệm – Phần I: Máy Tính & Hệ Điều Hành</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg:        #0F1117;
+    --surface:   #181C27;
+    --card:      #1E2336;
+    --border:    #2A3050;
+    --accent:    #4F8EF7;
+    --accent2:   #7C5CFA;
+    --correct:   #22C55E;
+    --wrong:     #EF4444;
+    --text:      #E8EAF0;
+    --muted:     #8B90A8;
+    --tag:       #2A3050;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0F1117 0%, #1a1f35 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 24px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,142,247,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(79,142,247,.12);
+    border: 1px solid rgba(79,142,247,.3);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    font-weight: 700; letter-spacing: -.02em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  header p {
+    color: var(--muted); font-size: 13px; margin-top: 8px;
+  }
+
+  /* ── SCOREBOARD ── */
+  .scoreboard {
+    display: flex; gap: 12px; justify-content: center;
+    padding: 20px 24px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 20px;
+    min-width: 110px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px; font-weight: 600;
+    color: var(--accent);
+  }
+  .stat-val.correct { color: var(--correct); }
+  .stat-val.wrong   { color: var(--wrong); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── PROGRESS BAR ── */
+  .prog-wrap { padding: 0 24px 8px; }
+  .prog-track {
+    height: 5px; background: var(--border); border-radius: 999px; overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .prog-label { font-size: 12px; color: var(--muted); text-align: right; margin-top: 5px; }
+
+  /* ── QUIZ AREA ── */
+  main { max-width: 760px; margin: 0 auto; padding: 8px 16px 48px; }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: border-color .25s;
+  }
+  .q-card.answered { border-color: rgba(79,142,247,.25); }
+
+  .q-head {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 20px 16px;
+  }
+  .q-num {
+    flex-shrink: 0;
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    margin-top: 1px;
+  }
+  .q-topic {
+    display: inline-block;
+    font-size: 10px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(79,142,247,.1);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-bottom: 6px;
+  }
+  .q-text { font-size: 15px; font-weight: 500; line-height: 1.6; }
+
+  /* ── OPTIONS ── */
+  .options { padding: 0 20px 16px; display: grid; gap: 8px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color .18s, background .18s, transform .12s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt:hover:not(.locked) { border-color: var(--accent); background: rgba(79,142,247,.06); transform: translateX(2px); }
+  .opt:active:not(.locked) { transform: translateX(1px); }
+
+  .opt-letter {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    transition: background .18s, color .18s;
+  }
+  .opt-text { font-size: 14px; line-height: 1.5; flex: 1; }
+
+  /* states */
+  .opt.correct {
+    background: rgba(34,197,94,.1);
+    border-color: var(--correct);
+  }
+  .opt.correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt.wrong {
+    background: rgba(239,68,68,.08);
+    border-color: var(--wrong);
+  }
+  .opt.wrong .opt-letter { background: var(--wrong); color: #fff; }
+  .opt.locked { cursor: default; }
+
+  /* ── EXPLANATION ── */
+  .explain {
+    margin: 0 20px 16px;
+    padding: 12px 16px;
+    background: rgba(79,142,247,.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px; color: var(--muted);
+    display: none;
+    animation: slideDown .25s ease;
+  }
+  .explain.show { display: block; }
+  .explain strong { color: var(--text); }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESULT SCREEN ── */
+  #result-screen {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin-top: 8px;
+  }
+  #result-screen.show { display: block; }
+
+  .result-emoji { font-size: 56px; margin-bottom: 16px; }
+  .result-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .result-sub { color: var(--muted); margin-bottom: 28px; font-size: 14px; }
+  .result-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 64px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1; margin-bottom: 4px;
+  }
+  .result-total { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+  .result-bars { display: flex; gap: 6px; justify-content: center; margin-bottom: 32px; }
+  .res-dot {
+    width: 32px; height: 32px; border-radius: 8px;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+  .res-dot.c { background: rgba(34,197,94,.2); }
+  .res-dot.w { background: rgba(239,68,68,.15); }
+
+  .btn-retry {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: opacity .18s, transform .12s;
+  }
+  .btn-retry:hover { opacity: .88; transform: translateY(-1px); }
+  .btn-retry:active { transform: translateY(0); }
+
+  /* ── SUBMIT BUTTON ── */
+  .submit-wrap { text-align: center; margin-top: 8px; }
+  #btn-submit {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 12px;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    transition: opacity .18s, transform .12s;
+    letter-spacing: .01em;
+  }
+  #btn-submit:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+  #btn-submit:not(:disabled):hover { opacity: .88; transform: translateY(-1px); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .scoreboard { gap: 8px; }
+    .stat { min-width: 90px; padding: 10px 14px; }
+    .stat-val { font-size: 20px; }
+    .q-head { gap: 10px; padding: 16px 14px 12px; }
+    .options { padding: 0 14px 14px; }
+    .opt { padding: 11px 12px; gap: 10px; }
+    .explain { margin: 0 14px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">📘 Tin Học Đại Cương · </div>
+  <h1>Phần I: Máy Tính & Hệ Điều Hành</h1>
+  <p>9 câu trắc nghiệm · Chọn đáp án để kiểm tra ngay</p>
+</header>
+
+<div class="scoreboard">
+  <div class="stat"><div class="stat-val" id="s-total">0/9</div><div class="stat-lbl">Đã trả lời</div></div>
+  <div class="stat"><div class="stat-val correct" id="s-correct">0</div><div class="stat-lbl">Đúng</div></div>
+  <div class="stat"><div class="stat-val wrong" id="s-wrong">0</div><div class="stat-lbl">Sai</div></div>
+</div>
+
+<div class="prog-wrap">
+  <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+  <div class="prog-label" id="prog-lbl">0 / 9 câu</div>
+</div>
+
+<main id="quiz-body">
+  <!-- questions injected by JS -->
+
+  <div id="result-screen">
+    <div class="result-emoji" id="r-emoji">🎉</div>
+    <div class="result-title" id="r-title">Xuất sắc!</div>
+    <div class="result-sub" id="r-sub">Bạn nắm vững kiến thức Phần I</div>
+    <div class="result-score" id="r-score">9</div>
+    <div class="result-total">/ 9 câu đúng</div>
+    <div class="result-bars" id="r-bars"></div>
+    <button class="btn-retry" onclick="retry()">↺ Làm lại</button>
+  </div>
+
+  <div class="submit-wrap" id="submit-wrap">
+    <button id="btn-submit" disabled onclick="showResult()">Xem kết quả →</button>
+  </div>
+</main>
+
+<script>
+const questions = [
+  // ── NHÓM 1: Phần cứng / phần mềm ──
+  {
+    topic: "Phần cứng & Phần mềm",
+    text: "Thiết bị nào sau đây KHÔNG phải là thiết bị nhập dữ liệu?",
+    opts: ["Bàn phím", "Máy chiếu (Projector)", "Máy quét (Scanner)", "Micro"],
+    ans: 1,
+    exp: "<strong>Máy chiếu là thiết bị xuất</strong> – nó hiển thị hình ảnh ra ngoài. Bàn phím, máy quét và micro đều là thiết bị nhập dữ liệu vào máy tính."
+  },
+  {
+    topic: "Phần cứng & Phần mềm",
+    text: "Phát biểu nào sau đây về phần mềm máy tính là ĐÚNG?",
+    opts: [
+      "Phần mềm là tất cả linh kiện điện tử có thể nhìn thấy được",
+      "Phần mềm là các chương trình điều khiển hoạt động của phần cứng",
+      "Phần mềm luôn được lưu trữ trên đĩa CD-ROM",
+      "Phần mềm chỉ bao gồm hệ điều hành"
+    ],
+    ans: 1,
+    exp: "<strong>Phần mềm = chương trình + dữ liệu</strong>, không phải vật lý. Nó điều khiển phần cứng hoạt động. Phần cứng mới là thứ \"nhìn, sờ được\"."
+  },
+  {
+    topic: "Phần cứng & Phần mềm",
+    text: "Nhóm thiết bị nào dưới đây gồm TOÀN thiết bị xuất (output)?",
+    opts: [
+      "Màn hình, loa, máy in",
+      "Bàn phím, chuột, màn hình",
+      "Loa, webcam, máy chiếu",
+      "Màn hình, máy quét, máy in"
+    ],
+    ans: 0,
+    exp: "<strong>Màn hình, loa, máy in</strong> đều xuất thông tin ra ngoài. Webcam/máy quét là thiết bị nhập. Bàn phím/chuột là thiết bị nhập."
+  },
+
+  // ── NHÓM 2: Bộ nhớ ──
+  {
+    topic: "Bộ nhớ máy tính",
+    text: "Khi mất điện đột ngột, loại bộ nhớ nào sau đây sẽ mất toàn bộ dữ liệu đang lưu?",
+    opts: ["ROM", "RAM", "Ổ cứng HDD", "USB Flash Drive"],
+    ans: 1,
+    exp: "<strong>RAM (volatile memory)</strong> – bộ nhớ tạm thời, dữ liệu biến mất khi mất nguồn. ROM, HDD, USB là bộ nhớ không mất dữ liệu khi tắt máy."
+  },
+  {
+    topic: "Bộ nhớ máy tính",
+    text: "1 GB bằng bao nhiêu MB?",
+    opts: ["1000 MB", "1024 MB", "1048 MB", "512 MB"],
+    ans: 1,
+    exp: "Hệ nhị phân: <strong>1 GB = 2¹⁰ MB = 1024 MB</strong>. Tương tự: 1 KB = 1024 Byte, 1 MB = 1024 KB, 1 TB = 1024 GB."
+  },
+  {
+    topic: "Bộ nhớ máy tính",
+    text: "CPU là viết tắt của cụm từ nào?",
+    opts: [
+      "Control Processing Unit",
+      "Central Program Unit",
+      "Central Processing Unit",
+      "Computer Processing Unit"
+    ],
+    ans: 2,
+    exp: "<strong>CPU = Central Processing Unit</strong> (Đơn vị xử lý trung tâm) – bộ não của máy tính, nơi thực hiện mọi phép tính và xử lý dữ liệu."
+  },
+
+  // ── NHÓM 3: Quản lý file / thư mục ──
+  {
+    topic: "Quản lý File & Thư mục",
+    text: "Trong Windows, để di chuyển một file vào Thùng rác (Recycle Bin), ta thực hiện thao tác nào?",
+    opts: [
+      "Nhấn Shift + Delete",
+      "Nhấn Ctrl + Delete",
+      "Nhấn phím Delete",
+      "Nhấn Ctrl + X"
+    ],
+    ans: 2,
+    exp: "<strong>Delete</strong> → đưa vào Recycle Bin (có thể khôi phục). <strong>Shift + Delete</strong> → xóa vĩnh viễn, không qua Recycle Bin. Ctrl+X = cắt (cut)."
+  },
+  {
+    topic: "Quản lý File & Thư mục",
+    text: "Phát biểu nào sau đây về cây thư mục trong Windows là ĐÚNG?",
+    opts: [
+      "Một file có thể nằm trong nhiều thư mục cha cùng lúc",
+      "Hai thư mục con trong cùng thư mục cha có thể trùng tên nhau",
+      "Mỗi ổ đĩa chỉ có một thư mục gốc duy nhất",
+      "Người dùng có thể tạo thêm thư mục gốc bất cứ lúc nào"
+    ],
+    ans: 2,
+    exp: "<strong>Mỗi ổ đĩa có đúng 1 thư mục gốc</strong>, do HĐH tạo khi định dạng ổ đĩa. Hai thư mục con trong cùng cha KHÔNG được trùng tên. File không thể phân thân vào 2 cha."
+  },
+  {
+    topic: "Quản lý File & Thư mục",
+    text: "Phần mềm nào phải được cài đặt ĐẦU TIÊN trước tất cả phần mềm khác trên máy tính?",
+    opts: [
+      "Phần mềm diệt virus (Antivirus)",
+      "Trình duyệt web (Browser)",
+      "Hệ điều hành (Operating System)",
+      "Bộ ứng dụng Office"
+    ],
+    ans: 2,
+    exp: "<strong>Hệ điều hành</strong> (Windows, Linux, macOS) phải có trước tiên – nó là nền tảng để mọi phần mềm khác chạy trên đó. Không có HĐH, không cài được gì."
+  }
+];
+
+// ── STATE ──
+let answered = 0, correct = 0, wrong = 0;
+const results = new Array(questions.length).fill(null); // null | true | false
+
+// ── BUILD UI ──
+function buildQuiz() {
+  const body = document.getElementById('quiz-body');
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = `card-${i}`;
+    card.innerHTML = `
+      <div class="q-head">
+        <div class="q-num">${String(i+1).padStart(2,'0')}</div>
+        <div>
+          <div class="q-topic">${q.topic}</div>
+          <div class="q-text">${q.text}</div>
+        </div>
+      </div>
+      <div class="options" id="opts-${i}">
+        ${q.opts.map((o,j) => `
+          <div class="opt" id="opt-${i}-${j}" onclick="pick(${i},${j})">
+            <div class="opt-letter">${'ABCD'[j]}</div>
+            <div class="opt-text">${o}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="explain" id="exp-${i}">💡 ${q.exp}</div>
+    `;
+    body.insertBefore(card, document.getElementById('result-screen'));
+  });
+}
+
+// ── ANSWER LOGIC ──
+function pick(qi, oi) {
+  // already answered
+  if (results[qi] !== null) return;
+
+  const isCorrect = oi === questions[qi].ans;
+  results[qi] = isCorrect;
+
+  // lock all options in this question
+  const opts = document.getElementById(`opts-${qi}`).children;
+  for (let opt of opts) opt.classList.add('locked');
+
+  // color chosen and correct
+  document.getElementById(`opt-${qi}-${oi}`).classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    document.getElementById(`opt-${qi}-${questions[qi].ans}`).classList.add('correct');
+  }
+
+  // show explanation
+  document.getElementById(`exp-${qi}`).classList.add('show');
+  document.getElementById(`card-${qi}`).classList.add('answered');
+
+  // update counters
+  answered++;
+  if (isCorrect) correct++; else wrong++;
+  updateStats();
+}
+
+// ── STATS ──
+function updateStats() {
+  document.getElementById('s-total').textContent   = `${answered}/9`;
+  document.getElementById('s-correct').textContent = correct;
+  document.getElementById('s-wrong').textContent   = wrong;
+
+  const pct = (answered / questions.length * 100).toFixed(0);
+  document.getElementById('prog').style.width     = pct + '%';
+  document.getElementById('prog-lbl').textContent = `${answered} / ${questions.length} câu`;
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = answered < questions.length;
+}
+
+// ── RESULT SCREEN ──
+function showResult() {
+  document.querySelectorAll('.q-card').forEach(c => c.style.display = 'none');
+  document.getElementById('submit-wrap').style.display = 'none';
+
+  const pct = correct / questions.length;
+  let emoji, title, sub;
+  if (pct === 1)       { emoji = '🏆'; title = 'Hoàn hảo!';    sub = 'Bạn trả lời đúng tất cả 9 câu – xuất sắc!'; }
+  else if (pct >= .78) { emoji = '🎉'; title = 'Rất tốt!';      sub = 'Nắm vững phần lớn kiến thức – tiếp tục phát huy!'; }
+  else if (pct >= .56) { emoji = '💪'; title = 'Khá ổn!';       sub = 'Ôn thêm những câu sai để củng cố kiến thức nhé.'; }
+  else                  { emoji = '📖'; title = 'Cần ôn thêm!'; sub = 'Xem lại đề cương và làm lại để nắm chắc hơn.'; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-sub').textContent   = sub;
+  document.getElementById('r-score').textContent = correct;
+
+  const bars = document.getElementById('r-bars');
+  bars.innerHTML = results.map((r,i) =>
+    `<div class="res-dot ${r ? 'c' : 'w'}" title="Câu ${i+1}: ${r ? 'Đúng' : 'Sai'}">${r ? '✓' : '✗'}</div>`
+  ).join('');
+
+  document.getElementById('result-screen').classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── RETRY ──
+function retry() {
+  answered = 0; correct = 0; wrong = 0;
+  results.fill(null);
+  document.getElementById('result-screen').classList.remove('show');
+  document.querySelectorAll('.q-card').forEach(c => c.style.display = '');
+  document.getElementById('submit-wrap').style.display = '';
+
+  // reset all option styles
+  questions.forEach((_,i) => {
+    for (let j = 0; j < 4; j++) {
+      const opt = document.getElementById(`opt-${i}-${j}`);
+      opt.className = 'opt';
+    }
+    document.getElementById(`exp-${i}`).classList.remove('show');
+    document.getElementById(`card-${i}`).classList.remove('answered');
+  });
+
+  updateStats();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── INIT ──
+buildQuiz();
+updateStats();
+</script>
+</body>
+</html>
